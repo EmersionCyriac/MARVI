@@ -1,0 +1,29 @@
+{
+  "dataset_file": "data/test_seqs.npz",
+  "total_sequences": 21,
+  "train_sequences": 14,
+  "test_sequences": 3,
+  "lookback_weeks": 4,
+  "num_features": 6,
+  "feature_names": [
+    "gwl_smooth_m",
+    "weekly_rain_mm",
+    "rain_4wk_sum_mm",
+    "weekly_temp_c",
+    "doy_sin",
+    "doy_cos"
+  ],
+  "train_date_range": [
+    "2023-01-22",
+    "2023-04-23"
+  ],
+  "test_date_range": [
+    "2023-05-28",
+    "2023-06-11"
+  ],
+  "purge_gap_weeks": 4,
+  "targets": [
+    "60_days_ahead (8 weeks)",
+    "90_days_ahead (12 weeks)"
+  ]
+}

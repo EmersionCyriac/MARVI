@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARVI - Smart Groundwater & Agronomic Advisory Portal</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="shortcut icon" href="/static/favicon.svg">
+    <!-- Local Leaflet CSS -->
+    <link rel="stylesheet" href="/static/vendor/leaflet.css">
+    <!-- Local Chart.js -->
+    <script src="/static/vendor/chart.umd.min.js"></script>
+    <!-- Local Leaflet JS -->
+    <script src="/static/vendor/leaflet.js"></script>
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="/static/style.css?v=4.3">
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <div class="header-logo-card" title="Indian Institute of Information Technology Kottayam">
+                <img src="/static/images/iiit_kottayam_logo.png" alt="IIIT Kottayam" class="header-logo" style="max-height: 36px;">
+            </div>
+            <div class="header-vdiv"></div>
+            <div class="brand">
+                <div class="brand-icon-wrap">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="brand-title">
+                        <span>MARVI Portal</span>
+                    </div>
+                    <div class="brand-subtitle">Dharta Watershed, Udaipur District, Rajasthan | Community Hydrology & Sowing Advisory</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="association-block">
+                <span class="association-text">In association with</span>
+                <div class="header-logo-card" title="Western Sydney University">
+                    <img src="/static/images/wsu_logo.png" alt="Western Sydney University" class="header-logo" style="max-height: 38px;">
+                </div>
+            </div>
+            <div class="header-logo-card" title="C.R.E.A.T.E Lab, IIIT Kottayam">
+                <img src="/static/images/create_lab_logo.png" alt="C.R.E.A.T.E Lab" class="header-logo" style="max-height: 34px;">
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="tab-map">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>
+            <span>Watershed Map</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-forecast">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+            <span>AI Forecaster</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-simulator">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+            <span>Agronomic Simulator</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-guard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Data Guard (EKF)</span>
+        </button>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container">
+
+        <!-- ============================================================== -->
+        <!-- TAB 1: WATERSHED MAP & WELL FLEET -->
+        <!-- ============================================================== -->
+        <section id="tab-map" class="tab-pane active">
+            <!-- Stat KPIs -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Monitored Stations</div>
+                    <div class="stat-value" id="kpi-total-stations">10 Wells</div>
+                    <div class="stat-sub" id="kpi-station-types">9 Farmer Wells + 1 CGWB Piezometer</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Mean Water Table Depth</div>
+                    <div class="stat-value" id="kpi-mean-depth">11.5 m bgl</div>
+                    <div class="stat-sub" id="kpi-depth-range">Ranging from 6.8m to 16.4m</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Aquifer Security Distribution</div>
+                    <div class="chip-group" id="kpi-security-dist">
+                        <span class="chip chip-green"><span class="chip-dot"></span> 6 Safe</span>
+                        <span class="chip chip-amber"><span class="chip-dot"></span> 3 Alert</span>
+                        <span class="chip chip-red"><span class="chip-dot"></span> 1 Stress</span>
+                    </div>
+                    <div class="dist-bar" id="kpi-dist-bar">
+                        <div class="dist-bar-green" style="width: 60%;"></div>
+                        <div class="dist-bar-amber" style="width: 30%;"></div>
+                        <div class="dist-bar-red" style="width: 10%;"></div>
+                    </div>
+                    <div class="stat-sub" style="margin-top: 0.4rem;">Hedging Strategy: Wheat + Mustard</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Bhujal Jankaars</div>
+                    <div class="stat-value">12 Volunteers</div>
+                    <div class="stat-sub">Weekly Sunday Telemetry</div>
+                </div>
+            </div>
+
+            <!-- Leaflet Map Card -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Village Aquifer Map</span>
+                    <span style="font-size:0.82rem; font-weight:normal; color:var(--text-muted);">Click any station pin to view storage, crop advice, and AI forecast</span>
+                </div>
+                <div id="map"></div>
+            </div>
+
+            <!-- Well Fleet Table -->
+            <div class="card">
+                <div class="card-title">Monitored Well Network Status (10 Stations)</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Well ID</th>
+                            <th>Station / Owner</th>
+                            <th>Village / Zone</th>
+                            <th>Current Depth</th>
+                            <th>Total Depth</th>
+                            <th>Security Status</th>
+                            <th>Recommended Crop Sowing</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fleet-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+
+        <!-- ============================================================== -->
+        <!-- TAB 2: AI FORECASTER (WELL-SPECIFIC HYDROLOGY) -->
+        <!-- ============================================================== -->
+        <section id="tab-forecast" class="tab-pane">
+            <div class="card">
+                <div class="card-title">
+                    <span>Physics-Informed Dual-Horizon Forecaster</span>
+                    <span class="status-badge status-green">Model: PyTorch 2-Layer LSTM (R²=0.92)</span>
+                </div>
+                <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:1.2rem;">
+                    Physics loss incorporates aquifer mass conservation: &Delta;h &prop; &sum;(Recharge &minus; Pumping).
+                    Select any well to inspect its unique hydrogeological depth, seasonal recession rate, and 60d / 90d forecasts.
+                </p>
+
+                <!-- Well Selector Bar -->
+                <div style="background:#f8fafc; padding:0.9rem 1.2rem; border-radius:8px; border:1px solid var(--border); margin-bottom:1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary-accent);">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <circle cx="12" cy="12" r="6"></circle>
+                            <circle cx="12" cy="12" r="2"></circle>
+                        </svg>
+                        <div>
+                            <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Select Monitored Well:</div>
+                            <select id="forecast-well-select" style="font-weight:600; font-size:0.95rem; padding:0.45rem 0.75rem; border-radius:6px; border:1px solid var(--border); background:white; min-width:340px; color:#0f172a; cursor:pointer;">
+                                <option value="RJ-DHT-01">RJ-DHT-01 - Ramesh Patel (Dharta Center) [GREEN]</option>
+                                <option value="RJ-DHT-02">RJ-DHT-02 - Suresh Meena (Dharta East) [AMBER]</option>
+                                <option value="RJ-DHT-03">RJ-DHT-03 - Kalu Ram (Dharta South) [GREEN]</option>
+                                <option value="RJ-DHT-04">RJ-DHT-04 - Mohan Lal (Dharta West Check Dam) [GREEN]</option>
+                                <option value="RJ-DHT-05">RJ-DHT-05 - Shanti Devi (Dharta Village Core) [GREEN]</option>
+                                <option value="RJ-DHT-06">RJ-DHT-06 - Bhagwati Lal (Dharta North Ridge) [RED]</option>
+                                <option value="RJ-DHT-07">RJ-DHT-07 - Leela Bai (Kundai Pond Zone) [GREEN]</option>
+                                <option value="RJ-DHT-08">RJ-DHT-08 - Bheru Singh (Badgaon Road) [AMBER]</option>
+                                <option value="RJ-DHT-09">RJ-DHT-09 - Chhagan Lal (Rundera Farm Cluster) [AMBER]</option>
+                                <option value="Bhinder_Pz_1">Bhinder_Pz_1 - CGWB Regional Piezometer [GREEN]</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="forecast-well-meta" style="display:flex; gap:1rem; align-items:center; font-size:0.88rem;">
+                        <!-- Updated by JS -->
+                    </div>
+                </div>
+
+                <!-- Dual Horizon KPI Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">60-Day Horizon Forecast</div>
+                        <div class="stat-value" id="kpi-60d-pred">-- m</div>
+                        <div class="stat-sub">
+                            Actual Test Truth: <strong id="kpi-60d-true">-- m</strong> &bull; <span id="kpi-60d-diff" style="color:var(--green); font-weight:bold;">--</span> &bull; <strong>R² = 0.92</strong>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">90-Day Horizon Forecast (Flowering Gate)</div>
+                        <div class="stat-value" id="kpi-90d-pred">-- m</div>
+                        <div class="stat-sub">
+                            Actual Test Truth: <strong id="kpi-90d-true">-- m</strong> &bull; <span id="kpi-90d-diff" style="color:var(--green); font-weight:bold;">--</span> &bull; <strong>R² = 0.86</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart Horizon Mode Switcher -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.2rem; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem; background:#f8fafc; padding:0.6rem 1rem; border-radius:8px; border:1px solid var(--border);">
+                    <div style="font-weight:700; color:var(--primary); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem;">
+                        <span>Forecast Horizon:</span>
+                        <span style="font-weight:normal; font-size:0.8rem; color:var(--text-muted);">(Compare Predicted vs Actual for exact timeframes)</span>
+                    </div>
+                    <div style="display:flex; gap:0.4rem;">
+                        <button id="btn-horizon-60d" class="btn btn-outline" style="padding:4px 10px; font-size:0.8rem;" onclick="setHorizonMode('60D')">
+                            60-Day Horizon
+                        </button>
+                        <button id="btn-horizon-90d" class="btn btn-outline" style="padding:4px 10px; font-size:0.8rem;" onclick="setHorizonMode('90D')">
+                            90-Day Horizon
+                        </button>
+                        <button id="btn-horizon-dual" class="btn" style="padding:4px 10px; font-size:0.8rem;" onclick="setHorizonMode('DUAL')">
+                            Dual View (Comparison)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chart.js Graph -->
+                <div style="height: 440px; width: 100%; position: relative; margin-top: 0.5rem;">
+                    <canvas id="forecastCanvas"></canvas>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================================================== -->
+        <!-- TAB 3: APPROACHABLE AGRONOMIC SIMULATOR -->
+        <!-- ============================================================== -->
+        <section id="tab-simulator" class="tab-pane">
+            <div class="card">
+                <div class="card-title">
+                    <span>Crop Planning & What-If Simulator</span>
+                    <span id="res-status-badge" class="status-badge status-green">GREEN</span>
+                </div>
+                <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:1.25rem;">
+                    Simulate your well water level and farm size to find your optimal Rabi crop allocation (Wheat vs Mustard vs Chickpea) and usable water volume in Litres.
+                </p>
+
+                <!-- 1-Click Helper Presets Toolbar -->
+                <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:0.85rem 1rem; margin-bottom:1.25rem;">
+                    <div style="font-weight:700; font-size:0.85rem; color:var(--primary); margin-bottom:0.5rem;">
+                        Quick Scenario Presets:
+                    </div>
+                    <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
+                        <button class="btn btn-outline" style="font-size:0.8rem; padding:4px 10px;" onclick="applySeasonPreset('GOOD')">
+                            <span class="chip-dot" style="background:#22c55e;"></span> Good Monsoon (6.5m depth)
+                        </button>
+                        <button class="btn btn-outline" style="font-size:0.8rem; padding:4px 10px;" onclick="applySeasonPreset('NORMAL')">
+                            <span class="chip-dot" style="background:#f59e0b;"></span> Normal Season (10.5m depth)
+                        </button>
+                        <button class="btn btn-outline" style="font-size:0.8rem; padding:4px 10px;" onclick="applySeasonPreset('DROUGHT')">
+                            <span class="chip-dot" style="background:#ef4444;"></span> Drought Stress (15.5m depth)
+                        </button>
+                        <span style="color:#cbd5e1;">|</span>
+                        <div style="display:flex; align-items:center; gap:0.4rem;">
+                            <label style="font-size:0.82rem; font-weight:600; color:var(--text-muted);">Load Well:</label>
+                            <select id="sim-well-select" style="font-size:0.82rem; font-weight:600; padding:4px 8px; border-radius:6px; background:white; border:1px solid var(--border); max-width:280px; cursor:pointer;">
+                                <option value="">-- Choose Monitored Well --</option>
+                                <option value="RJ-DHT-01">RJ-DHT-01 - Ramesh Patel (9.6m depth)</option>
+                                <option value="RJ-DHT-02">RJ-DHT-02 - Suresh Meena (14.8m depth)</option>
+                                <option value="RJ-DHT-03">RJ-DHT-03 - Kalu Ram (10.2m depth)</option>
+                                <option value="RJ-DHT-04">RJ-DHT-04 - Mohan Lal (6.8m depth)</option>
+                                <option value="RJ-DHT-05">RJ-DHT-05 - Shanti Devi (11.4m depth)</option>
+                                <option value="RJ-DHT-06">RJ-DHT-06 - Bhagwati Lal (16.4m depth)</option>
+                                <option value="RJ-DHT-07">RJ-DHT-07 - Leela Bai (7.4m depth)</option>
+                                <option value="RJ-DHT-08">RJ-DHT-08 - Bheru Singh (13.9m depth)</option>
+                                <option value="RJ-DHT-09">RJ-DHT-09 - Chhagan Lal (12.1m depth)</option>
+                                <option value="Bhinder_Pz_1">Bhinder_Pz_1 - CGWB Piezometer (12.8m depth)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <!-- Controls Column -->
+                    <div>
+                        <h4 style="margin-bottom:0.85rem; color:#0f172a; font-size:0.95rem; font-weight:700;">1. Adjust Well & Land Parameters</h4>
+
+                        <div class="form-group">
+                            <div class="form-label">
+                                <span>Current Water Depth (meters bgl):</span>
+                                <span class="form-value-badge" id="val-depth">9.6 m</span>
+                            </div>
+                            <input type="range" id="sim-depth" min="2.0" max="20.0" step="0.2" value="9.6">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                                <span>2m (Full well)</span>
+                                <span>10m (Average)</span>
+                                <span>20m (Empty)</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-label">
+                                <span>Well Diameter (meters):</span>
+                                <span class="form-value-badge" id="val-diam">2.5 m</span>
+                            </div>
+                            <input type="range" id="sim-diam" min="1.0" max="5.0" step="0.1" value="2.5">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                                <span>1m (Tube well)</span>
+                                <span>2.5m (Typical dug well)</span>
+                                <span>5m (Wide community well)</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-label">
+                                <span>Total Well Physical Depth (meters):</span>
+                                <span class="form-value-badge" id="val-total">18.0 m</span>
+                            </div>
+                            <input type="range" id="sim-total" min="10.0" max="25.0" step="0.5" value="18.0">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                                <span>10m (Shallow)</span>
+                                <span>18m (Bedrock)</span>
+                                <span>25m (Deep drilled)</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-label">
+                                <span>Cultivated Land Area (hectares):</span>
+                                <span class="form-value-badge" id="val-area">1.0 ha (4 Bighas)</span>
+                            </div>
+                            <input type="range" id="sim-area" min="0.5" max="4.0" step="0.1" value="1.0">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                                <span>0.5 ha (2 Bighas)</span>
+                                <span>1.0 ha (4 Bighas)</span>
+                                <span>4.0 ha (16 Bighas)</span>
+                            </div>
+                        </div>
+
+                        <!-- Sowing Gate Hedging Card -->
+                        <div class="alert-box alert-info" style="margin-top:1.25rem;">
+                            <strong>Sowing Gate Lock & Hedging Protocol:</strong><br>
+                            Sowing choice is locked once in mid-October. A 50/50 hedge (50% Wheat / 50% Mustard) provides proven downside risk mitigation against climate variability.
+                            Subsequent weekly 60d/90d AI forecasts steer <em>deficit irrigation rationing</em> rather than unfeasible crop changes.
+                        </div>
+                    </div>
+
+                    <!-- Visual Output Column -->
+                    <div>
+                        <h4 style="margin-bottom:0.85rem; color:#0f172a; font-size:0.95rem; font-weight:700;">2. Water Reservoir & Sowing Advice</h4>
+
+                        <!-- Storage KPI Cards -->
+                        <div class="stats-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:0.85rem;">
+                            <div class="stat-card">
+                                <div class="stat-label">Usable Storage Volume</div>
+                                <div class="stat-value" id="res-usable-litres" style="font-size:1.35rem;">-- L</div>
+                                <div class="stat-sub">Excludes 1.5m pump suction buffer</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Active Water Column</div>
+                                <div class="stat-value" id="res-water-col" style="font-size:1.35rem;">-- m</div>
+                                <div class="stat-sub">Saturated aquifer zone</div>
+                            </div>
+                        </div>
+
+                        <!-- Graphical Cutaway Well Diagram -->
+                        <div style="background:#f8fafc; border-radius:8px; padding:1rem; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; gap:2rem;">
+                            <div style="font-size:0.82rem; color:var(--text-muted); width:140px; line-height:1.4;">
+                                <div><strong>Surface: 0.0m</strong></div>
+                                <div style="margin: 22px 0 30px 0; color:#2563eb; font-weight:bold;">
+                                    Water Table:<br><span id="diagram-water-depth">9.6m bgl</span>
+                                </div>
+                                <div style="color:#b45309; font-weight:600;">
+                                    Pump Intake (1.5m buffer)
+                                </div>
+                                <div style="margin-top:18px; font-weight:bold; color:#0f172a;">
+                                    Well Bottom: <span id="diagram-total-depth">18.0m</span>
+                                </div>
+                            </div>
+                            <div class="column-visualizer">
+                                <div class="water-body" id="water-level-body" style="height: 50%;"></div>
+                                <div class="column-label" id="water-col-label" style="top: 45%;">-- m</div>
+                            </div>
+                        </div>
+
+                        <!-- Crop Allocations -->
+                        <div style="margin-top:1rem;">
+                            <h4 style="margin-bottom:0.65rem; font-size:0.88rem; font-weight:700;">Recommended Cultivation Allocation:</h4>
+                            
+                            <div class="crop-bar-wrap">
+                                <div class="crop-bar-label">
+                                    <span><strong>Wheat (Gehun)</strong> &mdash; 4-5 Irrigations (~450 mm)</span>
+                                    <span id="pct-wheat" style="font-weight:700; color:#15803d;">0%</span>
+                                </div>
+                                <div class="crop-progress"><div class="crop-fill fill-wheat" id="bar-wheat" style="width:0%;"></div></div>
+                            </div>
+
+                            <div class="crop-bar-wrap">
+                                <div class="crop-bar-label">
+                                    <span><strong>Mustard (Sarson)</strong> &mdash; 2-3 Irrigations (~240 mm)</span>
+                                    <span id="pct-mustard" style="font-weight:700; color:#b45309;">0%</span>
+                                </div>
+                                <div class="crop-progress"><div class="crop-fill fill-mustard" id="bar-mustard" style="width:0%;"></div></div>
+                            </div>
+
+                            <div class="crop-bar-wrap">
+                                <div class="crop-bar-label">
+                                    <span><strong>Chickpea (Chana)</strong> &mdash; Drought Hardy (~180 mm)</span>
+                                    <span id="pct-chickpea" style="font-weight:700; color:#c2410c;">0%</span>
+                                </div>
+                                <div class="crop-progress"><div class="crop-fill fill-chickpea" id="bar-chickpea" style="width:0%;"></div></div>
+                            </div>
+
+                            <div class="crop-bar-wrap">
+                                <div class="crop-bar-label">
+                                    <span><strong>Fallow / Conservation</strong> &mdash; Groundwater Preservation</span>
+                                    <span id="pct-fallow" style="font-weight:700; color:#64748b;">0%</span>
+                                </div>
+                                <div class="crop-progress"><div class="crop-fill fill-fallow" id="bar-fallow" style="width:0%;"></div></div>
+                            </div>
+                        </div>
+
+                        <!-- Action Takeaway Alert -->
+                        <div id="sim-alert-box" class="alert-box alert-green">
+                            Calculating advisory...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================================================== -->
+        <!-- TAB 4: SMART DATA GUARD (EKF) -->
+        <!-- ============================================================== -->
+        <section id="tab-guard" class="tab-pane">
+            <div class="card">
+                <div class="card-title">
+                    <span>Smart Data Guard & Extended Kalman Filter (EKF)</span>
+                    <span class="status-badge status-green">Layer 1: Physics &bull; Layer 2: EKF &bull; Layer 3: Spatial</span>
+                </div>
+                <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:1.25rem;">
+                    Validate raw crowdsourced readings from BhuJal Jankaars across all 10 watershed stations. Automatically catches 10x decimal slips, active pumping cone drawdown, and negative depth errors.
+                </p>
+
+                <div class="grid-2">
+                    <!-- Form -->
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Select Target Well:</label>
+                            <select id="guard-well" style="cursor:pointer;">
+                                <option value="RJ-DHT-01">RJ-DHT-01 - Ramesh Patel (Dharta Center - 18.0m total)</option>
+                                <option value="RJ-DHT-02">RJ-DHT-02 - Suresh Meena (Dharta East - 18.0m total)</option>
+                                <option value="RJ-DHT-03">RJ-DHT-03 - Kalu Ram (Dharta South - 16.0m total)</option>
+                                <option value="RJ-DHT-04">RJ-DHT-04 - Mohan Lal (Dharta West Check Dam - 15.0m total)</option>
+                                <option value="RJ-DHT-05">RJ-DHT-05 - Shanti Devi (Dharta Village Core - 17.0m total)</option>
+                                <option value="RJ-DHT-06">RJ-DHT-06 - Bhagwati Lal (Dharta North Ridge - 19.0m total)</option>
+                                <option value="RJ-DHT-07">RJ-DHT-07 - Leela Bai (Kundai Pond Zone - 14.0m total)</option>
+                                <option value="RJ-DHT-08">RJ-DHT-08 - Bheru Singh (Badgaon Road - 18.0m total)</option>
+                                <option value="RJ-DHT-09">RJ-DHT-09 - Chhagan Lal (Rundera Farm Cluster - 16.0m total)</option>
+                                <option value="Bhinder_Pz_1">Bhinder_Pz_1 - CGWB Piezometer (20.0m total)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Sounder Tape Depth Reading (meters):</label>
+                            <input type="number" id="guard-depth" step="0.1" value="9.6">
+                        </div>
+
+                        <div class="form-group" style="display:flex; align-items:center; gap:0.6rem;">
+                            <input type="checkbox" id="guard-pumping" style="width:auto; cursor:pointer;">
+                            <label for="guard-pumping" style="font-size:0.85rem; cursor:pointer;">Is irrigation motor pump currently running?</label>
+                        </div>
+
+                        <button id="btn-validate-guard" class="btn" style="width:100%; margin-top:0.35rem;">
+                            Run Telemetry Inspection
+                        </button>
+
+                        <!-- Quick Test Presets -->
+                        <div style="margin-top:1.25rem;">
+                            <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); margin-bottom:0.4rem;">Test Presets:</div>
+                            <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                                <button class="btn btn-outline" style="font-size:0.75rem; padding:4px 8px;" onclick="setGuardPreset(9.6, false)">Normal (9.6m)</button>
+                                <button class="btn btn-outline" style="font-size:0.75rem; padding:4px 8px;" onclick="setGuardPreset(25.0, false)">Decimal Slip (25.0m)</button>
+                                <button class="btn btn-outline" style="font-size:0.75rem; padding:4px 8px;" onclick="setGuardPreset(15.8, true)">Pump Running (15.8m)</button>
+                                <button class="btn btn-outline" style="font-size:0.75rem; padding:4px 8px;" onclick="setGuardPreset(-2.5, false)">Negative (-2.5m)</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Output -->
+                    <div>
+                        <div class="card" style="box-shadow:none; border: 1px solid var(--border); background:#f8fafc;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                                <strong>Inspection Telemetry</strong>
+                                <span id="guard-res-status" class="status-badge status-green">ACCEPTED</span>
+                            </div>
+
+                            <p id="guard-res-expl" style="font-size:0.9rem; margin-bottom:0.85rem; color:var(--text);">
+                                Ready for measurement input.
+                            </p>
+
+                            <div id="guard-res-corr" class="alert-box alert-amber" style="display:none; margin-bottom:0.85rem;">
+                            </div>
+
+                            <div class="stats-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:0;">
+                                <div class="stat-card" style="background:white;">
+                                    <div class="stat-label">EKF Predicted Depth</div>
+                                    <div class="stat-value" id="guard-res-ekf" style="font-size:1.15rem;">-- m</div>
+                                </div>
+                                <div class="stat-card" style="background:white;">
+                                    <div class="stat-label">Recession Velocity</div>
+                                    <div class="stat-value" id="guard-res-vel" style="font-size:1.15rem;">-- m/d</div>
+                                </div>
+                            </div>
+                            <div style="margin-top:0.5rem; font-size:0.75rem; color:var(--text-muted); text-align:right;">
+                                Innovation Z-Score: <span id="guard-res-z" style="font-weight:bold;">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Custom App Script -->
+    <script src="/static/app.js?v=4.1"></script>
+</body>
+</html>
