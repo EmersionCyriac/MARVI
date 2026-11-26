@@ -20,7 +20,7 @@ except ImportError:
     TORCH_AVAILABLE = False
 
 from starlette.applications import Starlette
-from starlette.responses import JSONResponse, FileResponse
+from starlette.responses import JSONResponse, FileResponse, HTMLResponse, Response
 from starlette.routing import Route, Mount
 from starlette.staticfiles import StaticFiles
 from starlette.middleware import Middleware
@@ -451,19 +451,26 @@ async def post_guard_validate(request):
 async def index(request):
     """Serve Leaflet application HTML."""
     index_file = os.path.join(BASE_DIR, "static", "index.html")
-    return FileResponse(index_file)
+    with open(index_file, "r", encoding="utf-8") as f:
+        html_content = f.read()
+    return HTMLResponse(html_content)
 
 
 async def favicon(request):
     """Serve favicon."""
     fav_file = os.path.join(BASE_DIR, "static", "favicon.svg")
-    return FileResponse(fav_file, media_type="image/svg+xml")
+    with open(fav_file, "r", encoding="utf-8") as f:
+        svg_content = f.read()
+    return Response(svg_content, media_type="image/svg+xml")
 
 
 # Routes
 routes = [
     Route("/", endpoint=index, methods=["GET", "HEAD"]),
+    Route("/api/index.py", endpoint=index, methods=["GET", "HEAD"]),
+    Route("/api/index", endpoint=index, methods=["GET", "HEAD"]),
     Route("/favicon.ico", endpoint=favicon, methods=["GET", "HEAD"]),
+    Route("/favicon.svg", endpoint=favicon, methods=["GET", "HEAD"]),
     Route("/api/wells", endpoint=get_wells, methods=["GET"]),
     Route("/api/forecast", endpoint=get_forecast, methods=["GET"]),
     Route("/api/advisory", endpoint=post_advisory, methods=["POST"]),
