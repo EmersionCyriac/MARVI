@@ -464,6 +464,15 @@ async def favicon(request):
     return Response(svg_content, media_type="image/svg+xml")
 
 
+async def catch_all(request):
+    """Fallback handler to prevent any 404 on Vercel or custom proxies."""
+    req_path = request.url.path.lstrip("/")
+    static_file = os.path.join(BASE_DIR, "static", req_path)
+    if os.path.isfile(static_file):
+        return FileResponse(static_file)
+    return await index(request)
+
+
 # Routes
 routes = [
     Route("/", endpoint=index, methods=["GET", "HEAD"]),
@@ -475,7 +484,8 @@ routes = [
     Route("/api/forecast", endpoint=get_forecast, methods=["GET"]),
     Route("/api/advisory", endpoint=post_advisory, methods=["POST"]),
     Route("/api/guard/validate", endpoint=post_guard_validate, methods=["POST"]),
-    Mount("/static", app=StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+    Mount("/static", app=StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static"),
+    Route("/{path:path}", endpoint=catch_all, methods=["GET", "HEAD", "POST"])
 ]
 
 app = Starlette(
