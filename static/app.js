@@ -460,6 +460,12 @@ document.addEventListener("DOMContentLoaded", () => {
     initGuard();
     
     // Forecaster well selector listener
+    // Deep-link tab activation via URL hash
+    if (window.location.hash) {
+        const hashTab = document.querySelector(`[data-tab="${window.location.hash.slice(1)}"]`);
+        if (hashTab) hashTab.click();
+    }
+
     const fcSelect = document.getElementById("forecast-well-select");
     if (fcSelect) {
         fcSelect.addEventListener("change", (e) => {
@@ -683,15 +689,24 @@ function renderFleetTable(wells) {
     wells.forEach(well => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td><strong>${well.well_id}</strong></td>
-            <td>${well.name}</td>
-            <td>${well.village}</td>
-            <td>${well.current_depth_m} m</td>
-            <td>${well.total_depth_m} m</td>
-            <td><span class="status-badge status-${well.status.toLowerCase()}">${well.status}</span></td>
-            <td>${well.recommended_crop}</td>
-            <td>
-                <button class="btn btn-outline" style="padding:4px 8px; font-size:0.8rem;" onclick="selectWellForForecast('${well.well_id}')">Inspect</button>
+            <td class="col-well-id desktop-only"><strong>${well.well_id}</strong></td>
+            <td class="col-station">
+                <div class="table-station-name">${well.name}</div>
+                <div class="table-sub-text mobile-only">${well.well_id} &bull; ${well.village}</div>
+            </td>
+            <td class="col-village desktop-only">${well.village}</td>
+            <td class="col-depth">
+                <div class="table-depth-main">${well.current_depth_m}m</div>
+                <div class="table-sub-text mobile-only">of ${well.total_depth_m}m</div>
+            </td>
+            <td class="col-total desktop-only">${well.total_depth_m} m</td>
+            <td class="col-status">
+                <span class="status-badge status-${well.status.toLowerCase()}">${well.status}</span>
+                <div class="table-sub-crop mobile-only">${well.recommended_crop}</div>
+            </td>
+            <td class="col-crop desktop-only">${well.recommended_crop}</td>
+            <td class="col-action">
+                <button class="btn btn-outline btn-inspect" onclick="selectWellForForecast('${well.well_id}')"><span class="desktop-only">Inspect</span><span class="mobile-only">View</span></button>
             </td>
         `;
         tableBody.appendChild(tr);
@@ -924,11 +939,17 @@ function renderForecastChart(data) {
         ];
     }
 
+    const isMobile = typeof window !== "undefined" && window.innerWidth <= 640;
+
     forecastChart = new Chart(ctx, {
         type: "line",
         data: {
             labels: data.dates,
-            datasets: datasets
+            datasets: datasets.map(ds => ({
+                ...ds,
+                pointRadius: isMobile ? Math.max(1.5, (ds.pointRadius || 3) - 1.2) : ds.pointRadius,
+                borderWidth: isMobile ? Math.max(1.5, (ds.borderWidth || 2) - 0.4) : ds.borderWidth
+            }))
         },
         options: {
             responsive: true,
@@ -938,13 +959,24 @@ function renderForecastChart(data) {
                     reverse: true,
                     title: {
                         display: true,
-                        text: "Depth to Water Table (meters bgl - Inverted Axis)",
-                        font: { weight: "bold", size: 12 }
+                        text: isMobile ? "Depth (m bgl - Inverted)" : "Depth to Water Table (meters bgl - Inverted Axis)",
+                        font: { weight: "bold", size: isMobile ? 10 : 12 }
+                    },
+                    ticks: {
+                        font: { size: isMobile ? 10 : 11 }
                     },
                     grid: { color: "#e2e8f0" }
                 },
                 x: {
-                    title: { display: true, text: "Timeline (Weekly Sunday Readings)", font: { weight: "bold", size: 12 } },
+                    title: {
+                        display: true,
+                        text: isMobile ? "Timeline (Weekly)" : "Timeline (Weekly Sunday Readings)",
+                        font: { weight: "bold", size: isMobile ? 10 : 12 }
+                    },
+                    ticks: {
+                        maxRotation: isMobile ? 45 : 0,
+                        font: { size: isMobile ? 9 : 11 }
+                    },
                     grid: { color: "#f8fafc" }
                 }
             },
@@ -952,10 +984,17 @@ function renderForecastChart(data) {
                 title: {
                     display: true,
                     text: chartTitle,
-                    font: { size: 13, weight: "bold" },
+                    font: { size: isMobile ? 11 : 13, weight: "bold" },
                     color: "#1e3a8a"
                 },
-                legend: { position: "top" },
+                legend: {
+                    position: "top",
+                    labels: {
+                        boxWidth: isMobile ? 12 : 30,
+                        padding: isMobile ? 6 : 10,
+                        font: { size: isMobile ? 10 : 11 }
+                    }
+                },
                 tooltip: {
                     callbacks: {
                         label: function(context) {

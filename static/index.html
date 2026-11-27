@@ -13,41 +13,37 @@
     <!-- Local Leaflet JS -->
     <script src="/static/vendor/leaflet.js"></script>
     <!-- Custom Style -->
-    <link rel="stylesheet" href="/static/style.css?v=4.3">
+    <link rel="stylesheet" href="/static/style.css?v=5.0">
 </head>
 <body>
 
     <!-- Header -->
     <header>
-        <div class="header-left">
+        <!-- Institutional Partner Logos at the Very Top (All in One Level) -->
+        <div class="header-top-logos">
             <div class="header-logo-card" title="Indian Institute of Information Technology Kottayam">
-                <img src="/static/images/iiit_kottayam_logo.png" alt="IIIT Kottayam" class="header-logo" style="max-height: 36px;">
+                <img src="/static/images/iiit_kottayam_logo.png" alt="IIIT Kottayam" class="header-logo">
             </div>
-            <div class="header-vdiv"></div>
-            <div class="brand">
-                <div class="brand-icon-wrap">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
-                    </svg>
-                </div>
-                <div>
-                    <div class="brand-title">
-                        <span>Smart MARVI</span>
-                    </div>
-                    <div class="brand-subtitle">Dharta Watershed, Udaipur District, Rajasthan | Community Hydrology & Sowing Advisory</div>
-                </div>
+            <div class="header-logo-card" title="Western Sydney University">
+                <img src="/static/images/wsu_logo.png" alt="Western Sydney University" class="header-logo">
+            </div>
+            <div class="header-logo-card" title="C.R.E.A.T.E Lab, IIIT Kottayam">
+                <img src="/static/images/create_lab_logo.png" alt="C.R.E.A.T.E Lab" class="header-logo">
             </div>
         </div>
 
-        <div class="header-right">
-            <div class="association-block">
-                <span class="association-text">In association with</span>
-                <div class="header-logo-card" title="Western Sydney University">
-                    <img src="/static/images/wsu_logo.png" alt="Western Sydney University" class="header-logo" style="max-height: 38px;">
-                </div>
+        <!-- Brand Title & Subtitle Bar -->
+        <div class="brand">
+            <div class="brand-icon-wrap">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+                </svg>
             </div>
-            <div class="header-logo-card" title="C.R.E.A.T.E Lab, IIIT Kottayam">
-                <img src="/static/images/create_lab_logo.png" alt="C.R.E.A.T.E Lab" class="header-logo" style="max-height: 34px;">
+            <div class="brand-text">
+                <div class="brand-title">
+                    <span>Smart MARVI</span>
+                </div>
+                <div class="brand-subtitle">Dharta Watershed, Udaipur District, Rajasthan | Community Hydrology & Sowing Advisory</div>
             </div>
         </div>
     </header>
@@ -123,24 +119,29 @@
 
             <!-- Well Fleet Table -->
             <div class="card">
-                <div class="card-title">Monitored Well Network Status (10 Stations)</div>
-                <table class="data-table">
+                <div class="card-title">
+                    <span>Monitored Well Network Status (10 Stations)</span>
+                    <span class="table-scroll-hint">← Swipe to view all 8 columns →</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Well ID</th>
-                            <th>Station / Owner</th>
-                            <th>Village / Zone</th>
-                            <th>Current Depth</th>
-                            <th>Total Depth</th>
-                            <th>Security Status</th>
-                            <th>Recommended Crop Sowing</th>
-                            <th>Action</th>
+                            <th class="col-well-id desktop-only">Well ID</th>
+                            <th class="col-station">Station / Owner</th>
+                            <th class="col-village desktop-only">Village / Zone</th>
+                            <th class="col-depth">Depth</th>
+                            <th class="col-total desktop-only">Total Depth</th>
+                            <th class="col-status">Status & Sowing</th>
+                            <th class="col-crop desktop-only">Recommended Crop Sowing</th>
+                            <th class="col-action">Action</th>
                         </tr>
                     </thead>
                     <tbody id="fleet-table-body">
                         <!-- Populated by JS -->
                     </tbody>
                 </table>
+                </div>
             </div>
         </section>
 
@@ -160,8 +161,8 @@
                 </p>
 
                 <!-- Well Selector Bar -->
-                <div style="background:#f8fafc; padding:0.9rem 1.2rem; border-radius:8px; border:1px solid var(--border); margin-bottom:1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
-                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                <div class="forecast-selector-bar">
+                    <div class="forecast-selector-left">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary-accent);">
                             <circle cx="12" cy="12" r="10"></circle>
                             <circle cx="12" cy="12" r="6"></circle>
@@ -183,7 +184,7 @@
                             </select>
                         </div>
                     </div>
-                    <div id="forecast-well-meta" style="display:flex; gap:1rem; align-items:center; font-size:0.88rem;">
+                    <div id="forecast-well-meta" class="forecast-well-meta">
                         <!-- Updated by JS -->
                     </div>
                 </div>
@@ -207,12 +208,12 @@
                 </div>
 
                 <!-- Chart Horizon Mode Switcher -->
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.2rem; margin-bottom:0.6rem; flex-wrap:wrap; gap:0.5rem; background:#f8fafc; padding:0.6rem 1rem; border-radius:8px; border:1px solid var(--border);">
-                    <div style="font-weight:700; color:var(--primary); font-size:0.88rem; display:flex; align-items:center; gap:0.4rem;">
+                <div class="horizon-switcher-bar">
+                    <div class="horizon-switcher-label">
                         <span>Forecast Horizon:</span>
-                        <span style="font-weight:normal; font-size:0.8rem; color:var(--text-muted);">(Compare Predicted vs Actual for exact timeframes)</span>
+                        <span class="horizon-sub-label">(Compare Predicted vs Actual)</span>
                     </div>
-                    <div style="display:flex; gap:0.4rem;">
+                    <div class="horizon-btn-group">
                         <button id="btn-horizon-60d" class="btn btn-outline" style="padding:4px 10px; font-size:0.8rem;" onclick="setHorizonMode('60D')">
                             60-Day Horizon
                         </button>
@@ -226,7 +227,7 @@
                 </div>
 
                 <!-- Chart.js Graph -->
-                <div style="height: 440px; width: 100%; position: relative; margin-top: 0.5rem;">
+                <div class="forecast-chart-container">
                     <canvas id="forecastCanvas"></canvas>
                 </div>
             </div>
@@ -365,7 +366,7 @@
                         </div>
 
                         <!-- Graphical Cutaway Well Diagram -->
-                        <div style="background:#f8fafc; border-radius:8px; padding:1rem; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; gap:2rem;">
+                        <div class="simulator-cutaway-wrap">
                             <div style="font-size:0.82rem; color:var(--text-muted); width:140px; line-height:1.4;">
                                 <div><strong>Surface: 0.0m</strong></div>
                                 <div style="margin: 22px 0 30px 0; color:#2563eb; font-weight:bold;">
@@ -526,6 +527,6 @@
     </main>
 
     <!-- Custom App Script -->
-    <script src="/static/app.js?v=4.6"></script>
+    <script src="/static/app.js?v=5.0"></script>
 </body>
 </html>
